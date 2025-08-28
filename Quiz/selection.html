@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Intuition Quiz - Select</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: url('intuition.jpg') no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #fff;
+  }
+  .container {
+    background: rgba(20,20,20,0.9);
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    width: 400px;
+    box-shadow: 0 0 20px #000;
+  }
+  h1 { margin-bottom: 20px; }
+  select { margin: 10px 0; padding: 5px; }
+  button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #222;
+    border: none;
+    color: #fff;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  button:hover { background: #444; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Intuition Quiz Settings</h1>
+  <label>
+    Number of Questions:
+    <select id="numQuestions">
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="30">30</option>
+    </select>
+  </label>
+  <br>
+  <label>
+    Time per Question (seconds):
+    <select id="timePerQuestion">
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="30">30</option>
+    </select>
+  </label>
+  <br>
+  <button onclick="startQuiz()">Start Quiz</button>
+</div>
+
+<script>
+function startQuiz() {
+  const numQuestions = document.getElementById('numQuestions').value;
+  const timePerQuestion = document.getElementById('timePerQuestion').value;
+  // Pass settings via URL parameters
+  window.location.href = `quiz.html?num=${numQuestions}&time=${timePerQuestion}`;
+}
+</script>
+</body>
+</html>

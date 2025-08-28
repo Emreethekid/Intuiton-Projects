@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Intuition Quiz</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: url('intuition-logo.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .quiz-container {
+    background: rgba(10,10,10,0.95);
+    padding: 25px;
+    border-radius: 15px;
+    width: 600px;
+    text-align: center;
+    box-shadow: 0 0 20px #000;
+  }
+  h1 { font-size: 24px; margin-bottom: 15px; }
+  ul { list-style: none; padding: 0; text-align: left; }
+  li { margin: 10px 0; }
+  button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    background-color: #333;
+    color: white;
+    cursor: pointer;
+  }
+  button:hover { background-color: #555; }
+  #timer { font-size: 18px; margin-bottom: 10px; color: #ff5555; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="quiz-container">
+  <h1 id="question">Loading question...</h1>
+  <div id="timer">Time left: 10s</div>
+  <ul id="options"></ul>
+  <button onclick="nextQuestion()">Next</button>
+</div>
+
+<script>
+// Get settings from URL
+const urlParams = new URLSearchParams(window.location.search);
+const numQuestions = parseInt(urlParams.get('num')) || 10;
+const timePerQuestion = parseInt(urlParams.get('time')) || 10;
+
+let quizData = [
+  // Block 1
+  {
+    question: "What is Intuition (0xIntuition)?",
+    options: ["A) A meme coin", "B) A decentralized knowledge graph", "C) A game", "D) An exchange"],
+    answer: "B) A decentralized knowledge graph"
+  },
+  {
+    question: "What is the native token of Intuition?",
+    options: ["A) $TRUST", "B) $INT", "C) $KNOW", "D) $GRAPH"],
+    answer: "A) $TRUST"
+  },
+  {
+    question: "What does Intuition aim to connect?",
+    options: ["A) People and memes", "B) AI and money", "C) Knowledge and reputation", "D) Charts and trading"],
+    answer: "C) Knowledge and reputation"
+  },
+  {
+    question: "What is the role of Truth Scribes in Intuition?",
+    options: ["A) Guarding liquidity", "B) Recording and transmitting knowledge", "C) Mining blocks", "D) Trading $TRUST"],
+    answer: "B) Recording and transmitting knowledge"
+  },
+
+  // Block 2
+  {
+    question: "Which symbol is often associated with Intuition?",
+    options: ["A) ⚡", "B) 👁️", "C) 🔥", "D) 🌍"],
+    answer: "B) 👁️"
+  },
+  {
+    question: "What does Intuition fight against in its lore?",
+    options: ["A) The Overmind", "B) The Markets", "C) The Miners", "D) The Bots"],
+    answer: "A) The Overmind"
+  },
+  {
+    question: "What epoch is dedicated to builders in Intuition?",
+    options: ["A) Epoch of Trust", "B) Builder’s Epoch", "C) The Genesis Epoch", "D) Epoch of Scribes"],
+    answer: "B) Builder’s Epoch"
+  },
+  {
+    question: "What do Scribes guard within the Intuition network?",
+    options: ["A) Truth", "B) Liquidity", "C) Miners", "D) Validators"],
+    answer: "A) Truth"
+  },
+
+  // Block 3
+  {
+    question: "What type of graph is Intuition building?",
+    options: ["A) Knowledge graph", "B) Line graph", "C) Bar chart", "D) Pie chart"],
+    answer: "A) Knowledge graph"
+  },
+  {
+    question: "Which community is central to Intuition?",
+    options: ["A) Scribes", "B) Farmers", "C) Hunters", "D) Builders"],
+    answer: "A) Scribes"
+  },
+  {
+    question: "Which blockchain principle does Intuition focus on?",
+    options: ["A) Decentralization", "B) Centralization", "C) Privatization", "D) Monopolization"],
+    answer: "A) Decentralization"
+  },
+  {
+    question: "Which core element powers the Intuition economy?",
+    options: ["A) $TRUST", "B) BTC", "C) ETH", "D) SOL"],
+    answer: "A) $TRUST"
+  },
+
+  // Block 4
+  {
+    question: "What does Intuition reward users for?",
+    options: ["A) Spreading knowledge", "B) Mining ETH", "C) Burning tokens", "D) Running ads"],
+    answer: "A) Spreading knowledge"
+  },
+  {
+    question: "What is the network’s stance on community?",
+    options: ["A) Community first", "B) Investors first", "C) Whales first", "D) No community"],
+    answer: "A) Community first"
+  },
+  {
+    question: "What ancient role do Scribes represent?",
+    options: ["A) Writers of truth", "B) Farmers of land", "C) Warriors of battle", "D) Healers of wounds"],
+    answer: "A) Writers of truth"
+  },
+  {
+    question: "Which protocol element resists manipulation?",
+    options: ["A) Decentralized reputation", "B) Private keys", "C) NFTs", "D) Mining pools"],
+    answer: "A) Decentralized reputation"
+  },
+
+  // Block 5
+  {
+    question: "What does $TRUST symbolize?",
+    options: ["A) Truth and reputation", "B) Speculation only", "C) Liquidity mining", "D) Fiat"],
+    answer: "A) Truth and reputation"
+  },
+  {
+    question: "What theme does Intuition’s lore explore?",
+    options: ["A) Awakening and resistance", "B) Trading bots", "C) Only yield farming", "D) Central banking"],
+    answer: "A) Awakening and resistance"
+  },
+  {
+    question: "Which narrative enemy controls humans in lore?",
+    options: ["A) The Overmind", "B) The Oracle", "C) The Miner", "D) The Trader"],
+    answer: "A) The Overmind"
+  },
+  {
+    question: "What do Scribes oppose?",
+    options: ["A) Blind obedience", "B) Knowledge", "C) Truth", "D) Trust"],
+    answer: "A) Blind obedience"
+  },
+
+  // Block 6
+  {
+    question: "Which epoch is focused on apps?",
+    options: ["A) Builder’s Epoch", "B) Liquidity Epoch", "C) Mining Epoch", "D) AI Epoch"],
+    answer: "A) Builder’s Epoch"
+  },
+  {
+    question: "What is the purpose of Intuition’s Roadmap?",
+    options: ["A) Guide the community", "B) Confuse users", "C) Hide goals", "D) Sell NFTs"],
+    answer: "A) Guide the community"
+  },
+  {
+    question: "What do scribes write?",
+    options: ["A) Knowledge connections", "B) Smart contracts only", "C) Charts", "D) Games"],
+    answer: "A) Knowledge connections"
+  },
+  {
+    question: "Which key value anchors Intuition?",
+    options: ["A) Trust", "B) Greed", "C) Control", "D) Profit"],
+    answer: "A) Trust"
+  },
+
+  // Block 7
+  {
+    question: "What is the visual mark of Intuition?",
+    options: ["A) The eye 👁️", "B) The crown 👑", "C) The flame 🔥", "D) The sword ⚔️"],
+    answer: "A) The eye 👁️"
+  },
+  {
+    question: "What is Intuition’s long-term goal?",
+    options: ["A) Rediscover human connection", "B) Become a bank", "C) Control miners", "D) Centralize data"],
+    answer: "A) Rediscover human connection"
+  },
+  {
+    question: "What do Scribes preserve?",
+    options: ["A) Truth in the network", "B) Transaction fees", "C) Liquidity pools", "D) NFT rarity"],
+    answer: "A) Truth in the network"
+  },
+  {
+    question: "Which chain-of-thought does Intuition resist?",
+    options: ["A) Digital control", "B) Freedom", "C) Reputation", "D) Openness"],
+    answer: "A) Digital control"
+  },
+
+  // Block 8
+  {
+    question: "What is Intuition compared to?",
+    options: ["A) A knowledge protocol", "B) A stock exchange", "C) A meme token", "D) A mining rig"],
+    answer: "A) A knowledge protocol"
+  },
+  {
+    question: "Which symbol is tied to $TRUST?",
+    options: ["A) 👁️", "B) 🔥", "C) ⚡", "D) ⛓️"],
+    answer: "A) 👁️"
+  },
+  {
+    question: "What story arc includes resistance?",
+    options: ["A) The Awakening", "B) The Banker’s Rise", "C) The Whale’s Feast", "D) The Miner’s Fall"],
+    answer: "A) The Awakening"
+  },
+  {
+    question: "What does Intuition reconnect?",
+    options: ["A) Humans beyond control", "B) Traders and bots", "C) Whales and profits", "D) Coins and charts"],
+    answer: "A) Humans beyond control"
+  },
+  
+
+
+  // Block 9
+  {
+    question: "What is the foundation of reputation in Intuition?",
+    options: ["A) Decentralized truth", "B) Paid ads", "C) Bot farms", "D) Central banks"],
+    answer: "A) Decentralized truth"
+  },
+  {
+    question: "What happens in ‘The Pyramid’ chapter?",
+    options: ["A) Hierarchy of control is revealed", "B) A bull run starts", "C) Miners get rich", "D) Tokens burn"],
+    answer: "A) Hierarchy of control is revealed"
+  },
+  {
+    question: "What does the Builder’s Epoch emphasize?",
+    options: ["A) Apps and tools", "B) Speculation only", "C) Whales", "D) NFT drops"],
+    answer: "A) Apps and tools"
+  },
+  {
+    question: "Which chapter includes rediscovery?",
+    options: ["A) Rebirth", "B) Collapse", "C) Liquidity", "D) Farm"],
+    answer: "A) Rebirth"
+  },
+
+  // Block 10
+  {
+    question: "What is the Truth Scribe’s duty?",
+    options: ["A) Transmit knowledge", "B) Farm liquidity", "C) Mine tokens", "D) Burn ETH"],
+    answer: "A) Transmit knowledge"
+  },
+  {
+    question: "What is Intuition’s narrative enemy?",
+    options: ["A) The Overmind", "B) The Trader", "C) The Bot", "D) The Farmer"],
+    answer: "A) The Overmind"
+  },
+  {
+    question: "Which epoch represents construction?",
+    options: ["A) Builder’s Epoch", "B) Epoch of Truth", "C) Epoch of War", "D) Epoch of Miners"],
+    answer: "A) Builder’s Epoch"
+  },
+  {
+    question: "What element empowers human trust?",
+    options: ["A) Knowledge graph", "B) Liquidity", "C) Bots", "D) Speculation"],
+    answer: "A) Knowledge graph"
+  },
+
+  // Block 11
+  {
+    question: "Which chapter explores rising beyond control?",
+    options: ["A) Transcendence", "B) Collapse", "C) Trade Wars", "D) Liquidity Epoch"],
+    answer: "A) Transcendence"
+  },
+  {
+    question: "What is the relic in lore?",
+    options: ["A) A symbol of truth", "B) A farming tool", "C) A miner’s helmet", "D) A liquidity pool"],
+    answer: "A) A symbol of truth"
+  },
+  {
+    question: "What chapter signals collective growth?",
+    options: ["A) Emergence", "B) Collapse", "C) Downfall", "D) Trade Epoch"],
+    answer: "A) Emergence"
+  },
+  {
+    question: "What is the ultimate path for seekers?",
+    options: ["A) Ascension", "B) Collapse", "C) Failure", "D) Speculation"],
+    answer: "A) Ascension"
+  },
+
+  // Block 12
+  {
+    question: "Which network value is irreplaceable?",
+    options: ["A) Trust", "B) Greed", "C) Control", "D) Profit"],
+    answer: "A) Trust"
+  },
+  {
+    question: "What protects against centralized manipulation?",
+    options: ["A) Decentralization", "B) Bots", "C) Ads", "D) Whales"],
+    answer: "A) Decentralization"
+  },
+  {
+    question: "What chapter describes rediscovery?",
+    options: ["A) Rebirth", "B) Collapse", "C) Liquidity", "D) End"],
+    answer: "A) Rebirth"
+  },
+  {
+    question: "Which protocol element is lore-based?",
+    options: ["A) Truth Scribes", "B) Miners", "C) Traders", "D) Validators"],
+    answer: "A) Truth Scribes"
+  },
+
+  // Block 13
+  {
+    question: "What underpins $TRUST?",
+    options: ["A) Reputation and knowledge", "B) Mining", "C) Liquidity pools", "D) Whales"],
+    answer: "A) Reputation and knowledge"
+  },
+  {
+    question: "What era follows awakening?",
+    options: ["A) The Decision", "B) The Farm", "C) The Trade", "D) The Collapse"],
+    answer: "A) The Decision"
+  },
+  {
+    question: "Which chapter reveals control structures?",
+    options: ["A) The Pyramid", "B) The Collapse", "C) The Trade", "D) The Game"],
+    answer: "A) The Pyramid"
+  },
+  {
+    question: "What does transcendence mean in Intuition?",
+    options: ["A) Rising beyond the Overmind", "B) Getting rich", "C) Mining faster", "D) Burning tokens"],
+    answer: "A) Rising beyond the Overmind"
+  },
+
+  // Block 14
+  {
+    question: "Which chapter involves choosing your destiny?",
+    options: ["A) Choosing Your Path", "B) Trade Wars", "C) Collapse", "D) Liquidity"],
+    answer: "A) Choosing Your Path"
+  },
+  {
+    question: "Which narrative piece closes the cycle?",
+    options: ["A) The Continuum", "B) The End", "C) The Fall", "D) The Farm"],
+    answer: "A) The Continuum"
+  },
+  {
+    question: "What kind of graph is Intuition building?",
+    options: ["A) Knowledge graph", "B) Trading chart", "C) Liquidity pool", "D) NFT rarity graph"],
+    answer: "A) Knowledge graph"
+  },
+  {
+    question: "What do scribes write on?",
+    options: ["A) Knowledge links", "B) Paper", "C) Coins", "D) Contracts"],
+    answer: "A) Knowledge links"
+  },
+
+  // Block 15
+  {
+    question: "What is Intuition’s main focus?",
+    options: ["A) Decentralized trust", "B) Centralized finance", "C) Liquidity farming", "D) Mining rewards"],
+    answer: "A) Decentralized trust"
+  },
+  {
+    question: "Which symbol unites the scribes?",
+    options: ["A) 👁️", "B) 🔥", "C) ⚡", "D) 🌍"],
+    answer: "A) 👁️"
+  },
+  {
+    question: "What kind of connections matter in Intuition?",
+    options: ["A) Human knowledge connections", "B) Only transactions", "C) Liquidity pairs", "D) Token swaps"],
+    answer: "A) Human knowledge connections"
+  },
+  {
+    question: "What do scribes awaken?",
+    options: ["A) Human memory", "B) Tokens", "C) Liquidity", "D) Miners"],
+    answer: "A) Human memory"
+  },
+
+  // Block 16
+  {
+    question: "What chapter highlights hidden control?",
+    options: ["A) A Subtle Oppressor", "B) Collapse", "C) Trade Epoch", "D) Liquidity Epoch"],
+    answer: "A) A Subtle Oppressor"
+  },
+  {
+    question: "Which role does the Overmind play?",
+    options: ["A) Silent manipulator", "B) Truth keeper", "C) Miner", "D) Trader"],
+    answer: "A) Silent manipulator"
+  },
+  {
+    question: "What does emergence symbolize?",
+    options: ["A) Collective growth", "B) Speculative gain", "C) Liquidity farm", "D) Collapse"],
+    answer: "A) Collective growth"
+  },
+  {
+    question: "What anchors decentralized reputation?",
+    options: ["A) Truth connections", "B) Liquidity pools", "C) Bots", "D) Miners"],
+    answer: "A) Truth connections"
+  },
+
+  // Block 17
+  {
+    question: "What chapter comes after resistance?",
+    options: ["A) The Pyramid", "B) Collapse", "C) Liquidity Epoch", "D) Mining"],
+    answer: "A) The Pyramid"
+  },
+  {
+    question: "What do Truth Scribes guard?",
+    options: ["A) Knowledge", "B) Coins", "C) Liquidity", "D) NFTs"],
+    answer: "A) Knowledge"
+  },
+  {
+    question: "What is the name of Intuition’s token?",
+    options: ["A) $TRUST", "B) $INT", "C) $KNOW", "D) $LOGOS"],
+    answer: "A) $TRUST"
+  },
+  {
+    question: "Which path do seekers follow?",
+    options: ["A) Ascension", "B) Collapse", "C) Failure", "D) Liquidity"],
+    answer: "A) Ascension"
+  },
+
+  // Block 18
+  {
+    question: "Which lore piece begins the journey?",
+    options: ["A) The Awakening", "B) Collapse", "C) Liquidity Epoch", "D) Trade Epoch"],
+    answer: "A) The Awakening"
+  },
+  {
+    question: "What happens in ‘The Decision’?",
+    options: ["A) Choice to resist or obey", "B) Tokens airdrop", "C) Liquidity event", "D) Collapse"],
+    answer: "A) Choice to resist or obey"
+  },
+  {
+    question: "What is the Continuum?",
+    options: ["A) Unending cycle of truth", "B) Liquidity pool", "C) Miner rewards", "D) Speculation"],
+    answer: "A) Unending cycle of truth"
+  },
+  {
+    question: "What chapter shows a new beginning?",
+    options: ["A) Rebirth", "B) Collapse", "C) Liquidity Epoch", "D) Trade Epoch"],
+    answer: "A) Rebirth"
+  },
+
+  // Block 19
+  {
+    question: "What collective do Intuits form?",
+    options: ["A) Community of trust", "B) Mining pool", "C) Liquidity farm", "D) Trade union"],
+    answer: "A) Community of trust"
+  },
+  {
+    question: "What is Intuition’s narrative core?",
+    options: ["A) Truth and resistance", "B) Liquidity only", "C) Charts", "D) Profits"],
+    answer: "A) Truth and resistance"
+  },
+  {
+    question: "What must seekers transcend?",
+    options: ["A) The Overmind’s control", "B) Liquidity pools", "C) Token farming", "D) Whale trades"],
+    answer: "A) The Overmind’s control"
+  },
+  {
+    question: "What symbolizes connection?",
+    options: ["A) Knowledge graph", "B) Mining rig", "C) Liquidity pool", "D) NFT art"],
+    answer: "A) Knowledge graph"
+  },
+
+  // Block 20
+  {
+    question: "What is Intuition’s main epoch today?",
+    options: ["A) Builder’s Epoch", "B) Liquidity Epoch", "C) Collapse Epoch", "D) Trade Epoch"],
+    answer: "A) Builder’s Epoch"
+  },
+  {
+    question: "What is the final destiny of seekers?",
+    options: ["A) Ascension", "B) Failure", "C) Collapse", "D) Liquidity"],
+    answer: "A) Ascension"
+  },
+  {
+    question: "Which role connects lore with protocol?",
+    options: ["A) Truth Scribes", "B) Validators", "C) Whales", "D) Traders"],
+    answer: "A) Truth Scribes"
+  },
+  {
+    question: "What must be protected above all?",
+    options: ["A) Truth", "B) Profit", "C) Liquidity", "D) Bots"],
+    answer: "A) Truth"
+  },
+// Block 21
+{
+    question: "What icon symbolizes seeing beyond?",
+    options: ["A) 👁️", "B) ⚡", "C) 🔥", "D) 🌍"],
+    answer: "A) 👁️"
+},
+{
+    question: "What do Intuits resist?",
+    options: ["A) Digital control", "B) Freedom", "C) Openness", "D) Truth"],
+    answer: "A) Digital control"
+},
+{
+    question: "What is the scribes’ greatest weapon?",
+    options: ["A) Knowledge", "B) Coins", "C) Liquidity", "D) Charts"],
+    answer: "A) Knowledge"
+},
+{
+    question: "Which chapter closes the circle?",
+    options: ["A) The Continuum", "B) Collapse", "C) Liquidity Epoch", "D) End"],
+    answer: "A) The Continuum"
+},
+
+// Block 22
+{
+    question: "What is Intuition’s token ticker?",
+    options: ["A) $TRUST", "B) $INTU", "C) $KNOW", "D) $LOGOS"],
+    answer: "A) $TRUST"
+},
+{
+    question: "What chapter embodies collective uprising?",
+    options: ["A) Emergence", "B) Collapse", "C) Liquidity", "D) Trade Epoch"],
+    answer: "A) Emergence"
+},
+{
+    question: "What hidden enemy manipulates minds?",
+    options: ["A) The Overmind", "B) The Trader", "C) The Bot", "D) The Miner"],
+    answer: "A) The Overmind"
+},
+{
+    question: "What restores human connection?",
+    options: ["A) Decentralized truth", "B) Mining pools", "C) Liquidity", "D) Bots"],
+    answer: "A) Decentralized truth"
+},
+
+// Block 23
+{
+    question: "What is Intuition’s protocol type?",
+    options: ["A) Knowledge graph protocol", "B) Trading protocol", "C) NFT protocol", "D) Liquidity protocol"],
+    answer: "A) Knowledge graph protocol"
+},
+{
+    question: "What role do scribes echo from history?",
+    options: ["A) Keepers of records", "B) Traders", "C) Farmers", "D) Miners"],
+    answer: "A) Keepers of records"
+},
+{
+    question: "What chapter signals freedom?",
+    options: ["A) Transcendence", "B) Collapse", "C) Liquidity Epoch", "D) Trade Epoch"],
+    answer: "A) Transcendence"
+},
+{
+    question: "What unites Intuition’s lore?",
+    options: ["A) Truth", "B) Profit", "C) Control", "D) Greed"],
+    answer: "A) Truth"
+},
+
+// Block 24
+{
+    question: "What chapter deals with hidden oppression?",
+    options: ["A) A Subtle Oppressor", "B) Collapse", "C) Liquidity Epoch", "D) Trade Epoch"],
+    answer: "A) A Subtle Oppressor"
+},
+{
+    question: "What do seekers gain after awakening?",
+    options: ["A) Awareness", "B) Liquidity", "C) Profit", "D) Speculation"],
+    answer: "A) Awareness"
+    }
+];
+
+quizData = shuffle(quizData).slice(0, numQuestions);
+
+let current = 0;
+let score = 0;
+let userAnswers = [];
+let timer;
+
+function shuffle(array){ return array.sort(()=>Math.random()-0.5); }
+
+function loadQuestion() {
+  clearInterval(timer);
+  let timeLeft = timePerQuestion;
+  document.getElementById("timer").innerText = `Time left: ${timeLeft}s`;
+
+  timer = setInterval(()=>{
+    timeLeft--;
+    document.getElementById("timer").innerText = `Time left: ${timeLeft}s`;
+    if(timeLeft<=0) nextQuestion();
+  },1000);
+
+  const q = quizData[current];
+  document.getElementById("question").innerText = q.question;
+  const optionsList = document.getElementById("options");
+  optionsList.innerHTML = "";
+
+  q.options.forEach((opt,index)=>{
+    const li = document.createElement("li");
+    li.innerHTML=`<input type="radio" name="option" value="${opt}"> ${opt}`;
+    optionsList.appendChild(li);
+  });
+}
+
+function nextQuestion() {
+  clearInterval(timer);
+  const selected = document.querySelector('input[name="option"]:checked');
+  const selectedValue = selected ? selected.value : "No answer";
+  userAnswers.push(selectedValue);
+
+  if(selectedValue === quizData[current].answer) score++;
+
+  current++;
+  if(current<quizData.length) loadQuestion();
+  else {
+    // Pass results to result page via sessionStorage
+    sessionStorage.setItem("quizScore", score);
+    sessionStorage.setItem("quizTotal", quizData.length);
+    sessionStorage.setItem("quizAnswers", JSON.stringify(userAnswers));
+    sessionStorage.setItem("quizQuestions", JSON.stringify(quizData));
+    window.location.href="result.html";
+  }
+}
+
+// Start first question
+loadQuestion();
+</script>
+</body>
+</html>
+
+

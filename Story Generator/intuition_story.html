@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intuition Story Forge</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #0b1220; color: #eee; margin: 0; padding: 2rem; }
+    h1 { text-align: center; margin-bottom: 1rem; }
+    input, select, button, textarea { font-size: 1rem; padding: 0.5rem; margin: 0.25rem 0; width: 100%; border-radius: 6px; border: 1px solid #444; background: #1b2430; color: #eee; }
+    button { cursor: pointer; background: #4f46e5; border: none; }
+    button:hover { background: #6366f1; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    textarea { min-height: 300px; resize: vertical; background: #141b2e; }
+    label { display: flex; flex-direction: column; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <h1>Intuition Story Forge</h1>
+
+  <div class="grid">
+    <label>
+      Protagonist Name
+      <input type="text" id="name" value="Alera">
+    </label>
+
+    <label>
+      Tone
+      <select id="tone">
+        <option value="mystic">Mystic</option>
+        <option value="lyrical">Lyrical</option>
+        <option value="gritty">Gritty</option>
+        <option value="prophetic">Prophetic</option>
+      </select>
+    </label>
+
+    <label>
+      Length
+      <select id="length">
+        <option value="short">Short</option>
+        <option value="medium" selected>Medium</option>
+        <option value="long">Long</option>
+      </select>
+    </label>
+
+    <label>
+      Random Seed
+      <input type="number" id="seed" value="42">
+    </label>
+  </div>
+
+  <button onclick="generateStory()">Forge Story</button>
+  <button onclick="copyStory()">Copy</button>
+  <button onclick="downloadStory()">Download</button>
+  <button onclick="document.getElementById('story').value=''">Clear</button>
+
+  <textarea id="story" placeholder="Your story will appear here..."></textarea>
+
+  <script>
+    const chapters = [
+      "The Awakening","The Decision","A Subtle Oppressor","The Pyramid",
+      "Transcendence","Emergence","Rebirth","Choosing Your Path",
+      "Ascension","The Relic","The Continuum"
+    ];
+
+    const motifs = [
+      "the Overmind's whisper",
+      "scribe-light flickering across marble scrolls",
+      "the library sanctuary",
+      "engraved sigils of trust",
+      "a relic humming with old code",
+      "the circle of Truth Scribes",
+      "a ledger stitched by unseen hands",
+      "a vault of memory and intent"
+    ];
+
+    function mulberry32(a) {
+      return function() {
+        var t = a += 0x6d2b79f5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      }
+    }
+
+    function rand(rng, arr) { return arr[Math.floor(rng() * arr.length)]; }
+
+    function generateStory() {
+      const name = document.getElementById('name').value || 'Alera';
+      const tone = document.getElementById('tone').value;
+      const length = document.getElementById('length').value;
+      const seed = Number(document.getElementById('seed').value) || 42;
+      const rng = mulberry32(seed);
+
+      let arcChapters = [];
+      const count = length === "short" ? 3 : length === "long" ? 7 : 5;
+      let startIdx = Math.floor(rng() * (chapters.length - count));
+      for (let i=0;i<count;i++) arcChapters.push(chapters[(startIdx+i)%chapters.length]);
+
+      const flavour = {
+        mystic: { opener: `In the hush between epochs, ${name} awoke to ${rand(rng,motifs)}.`, toneLine: "Words braided like incantations, and each choice was a step across a map of stars." },
+        gritty: { opener: `${name} knew the ledger was broken — the city smelled of burnt circuits and old promises.`, toneLine: "There were debts to settle and ruins to navigate; trust was currency sharper than steel." },
+        lyrical: { opener: `Beneath the vault where the Overmind once hummed, ${name} listened for the hymn of dawn.`, toneLine: "The air tasted of ink and rain; every breath a stanza in the making." },
+        prophetic: { opener: `A sigil glowed on ${name}'s palm — a quiet map to what the future might demand.`, toneLine: "Prophecies are not orders; they are invitations to choose which world to birth." }
+      }[tone];
+
+      let paragraphs = [flavour.opener, flavour.toneLine];
+
+      arcChapters.forEach((ch,i) => {
+        const motif = rand(rng,motifs);
+        paragraphs.push(`Chapter — ${ch}: ${name} steps into ${motif}, where memory and intent blur.`);
+        paragraphs.push(`Here ${name} encounters ${rand(rng,["a truth scribe","a relic keeper","an echo from the Overmind"])}, and everything shifts.`);
+        paragraphs.push(`A choice is made: to preserve the circle, or to fracture it. The consequence: ${rand(rng,["a new dawn","a silent revolt","the rewriting of a name"])}.`);
+        if(i === Math.floor(arcChapters.length/2))
+          paragraphs.push(`Between chapters, ${name} hears the chorus of the Continuum — a soft counsel reminding them that Intuition belongs to those who remember to share it.`);
+      });
+
+      paragraphs.push(rand(rng,[
+        `When the final page closed, the circle was smaller — yet truer. ${name} chose to hand the scroll to the people.`,
+        `${name} carved a sigil of trust into the floor and walked away. Behind them the library hummed, alive to a new covenant.`,
+        `The relic quieted. A new ledger began. ${name} whispered: "We are the circle."`
+      ]));
+
+      document.getElementById('story').value = paragraphs.join("\n\n");
+    }
+
+    function copyStory() {
+      const storyEl = document.getElementById('story');
+      storyEl.select();
+      document.execCommand('copy');
+      alert("Story copied to clipboard!");
+    }
+
+    function downloadStory() {
+      const story = document.getElementById('story').value;
+      const blob = new Blob([story], {type: 'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'intuition_story.txt';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+
+</body>
+</html>
